@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Time</title>
+  <link rel="stylesheet" href="main.css">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <section class="game-time-ui">
+    <span id="game-days-ui"></span>
+    <span id="game-hours-minutes-ui"></span>
+  </section>
+
+  <aside class="game-debugger">
+    <button id="pause-play-btn" onclick="togglePausePlay();">Pause</button>
+    <button onclick="manipulateTime(1);">1x</button>
+    <button onclick="manipulateTime(2);">2x</button>
+    <button onclick="manipulateTime(3);">3x</button>
+    <button onclick="manipulateTime(4);">4x</button>
+    <button onclick="manipulateTime(10);">10x</button>
+    <button onclick="manipulateTime(100);">100x</button>
+    <button onclick="manipulateTime(1000);">Max</button>
+  </aside>
+
+  <script>
+    /*
+     * Game cycle == 15m (900,000ms)
+     * Game hour == 37.5s (37500ms)
+     * Game minute = 625ms
+    */
+
+    let time_data = {};
+    let game_speed = 625;
+    let game_status = 'paused';
+
+    function getTimeData() {
+      const savedTime = JSON.parse(localStorage.getItem("bitfall-time-data"));
+      if (savedTime) {
+        time_data = savedTime;
+      } else {
+        time_data = {
+          years: 1,
+          days: 1,
+          hours: 12,
+          minutes: 0,
+        }
+      }
+    }
+
+    getTimeData();
+
+    function initializeTime() {
+      gameTimeInterval = setInterval(function () {
+        game_status = "running";
+        initDays();
+        initHours();
+        initMinutes();
+        buildTimeUI();
+
+      }, game_speed);
+    }
+
+    initializeTime();
+
+    function buildTimeUI() {
+      let timeMinutes = time_data.minutes < 10 ? `0${time_data.minutes}` : `${time_data.minutes}`;
+      let timeHours = time_data.hours < 10 ? `0${time_data.hours}` : `${time_data.hours}`;
+
+      document.querySelector('#game-days-ui').innerText = `Day ${time_data.days}`;
+      document.querySelector('#game-hours-minutes-ui').innerText = `${timeHours}:${timeMinutes}`;
+    }
+
+    function initDays() {
+      if (time_data.days > 365) {
+        time_data.days = 0;
+        ++time_data.years;
+      }
+    }
+
+    function initHours() {
+      if (time_data.hours > 23) {
+        time_data.hours = 0;
+        ++time_data.days;
+      }
+    }
+
+    function initMinutes() {
+      ++time_data.minutes;
+      if (time_data.minutes > 59) {
+        time_data.minutes = 0;
+        ++time_data.hours
+      }
+    }
+
+    function pauseGame() {
+      clearInterval(gameTimeInterval);
+      game_status = "paused"
+    }
+
+    function togglePausePlay() {
+      if (game_status == "running") {
+        pauseGame();
+        document.querySelector('#pause-play-btn').innerText = 'Resume';
+      } else if (game_status == "paused") {
+        initializeTime();
+        document.querySelector('#pause-play-btn').innerText = 'Pause';
+      }
+    }
+
+    function manipulateTime(speed) {
+      pauseGame();
+      game_speed = 625 / speed;
+      initializeTime();
+    }
+  </script>
+</body>
+
+</html>

@@ -30,9 +30,9 @@
 
   <script>
     /*
-     * Game cycle == 15m (900,000ms)
-     * Game hour == 37.5s (37500ms)
-     * Game minute = 625ms
+     * 1 game day == 15m (900,000ms)
+     * 1 game hour == 37.5s (37500ms)
+     * 1 game minute = 625ms
     */
 
     let time_data = {};
@@ -53,50 +53,36 @@
       }
     }
 
-    getTimeData();
-
     function initializeTime() {
       gameTimeInterval = setInterval(function () {
         game_status = "running";
-        initDays();
-        initHours();
-        initMinutes();
-        buildTimeUI();
+
+        if (time_data.days > 365) {
+          time_data.days = 0;
+          ++time_data.years;
+        }
+
+        if (time_data.hours > 23) {
+          time_data.hours = 0;
+          ++time_data.days;
+        }
+
+        ++time_data.minutes;
+        if (time_data.minutes > 59) {
+          time_data.minutes = 0;
+          ++time_data.hours
+        }
+
+        let timeMinutes = time_data.minutes < 10 ? `0${time_data.minutes}` : `${time_data.minutes}`;
+        let timeHours = time_data.hours < 10 ? `0${time_data.hours}` : `${time_data.hours}`;
+        document.querySelector('#game-days-ui').innerText = `Day ${time_data.days}`;
+        document.querySelector('#game-hours-minutes-ui').innerText = `${timeHours}:${timeMinutes}`;
 
       }, game_speed);
     }
 
+    getTimeData();
     initializeTime();
-
-    function buildTimeUI() {
-      let timeMinutes = time_data.minutes < 10 ? `0${time_data.minutes}` : `${time_data.minutes}`;
-      let timeHours = time_data.hours < 10 ? `0${time_data.hours}` : `${time_data.hours}`;
-
-      document.querySelector('#game-days-ui').innerText = `Day ${time_data.days}`;
-      document.querySelector('#game-hours-minutes-ui').innerText = `${timeHours}:${timeMinutes}`;
-    }
-
-    function initDays() {
-      if (time_data.days > 365) {
-        time_data.days = 0;
-        ++time_data.years;
-      }
-    }
-
-    function initHours() {
-      if (time_data.hours > 23) {
-        time_data.hours = 0;
-        ++time_data.days;
-      }
-    }
-
-    function initMinutes() {
-      ++time_data.minutes;
-      if (time_data.minutes > 59) {
-        time_data.minutes = 0;
-        ++time_data.hours
-      }
-    }
 
     function pauseGame() {
       clearInterval(gameTimeInterval);
